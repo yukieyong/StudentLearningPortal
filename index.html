@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Coding & AI Progress Portal</title>
+<style>
+  :root{
+    --purple:#6C4CF1; --pink:#F0489B; --yellow:#FFC93C; --teal:#12B5A5;
+    --blue:#2E7CF6; --ink:#20224B; --bg:#F4F2FF; --card:#ffffff;
+    --done:#12B5A5; --radius:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI', 'Trebuchet MS', Arial, sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5;
+  }
+  header{
+    background:linear-gradient(120deg, var(--purple), var(--pink));
+    color:#fff; padding:28px 20px; text-align:center;
+  }
+  header h1{font-size:clamp(1.5rem, 4vw, 2.3rem); letter-spacing:.5px;}
+  header p{margin-top:6px; font-size:1rem; opacity:.92;}
+  .wrap{max-width:1100px; margin:0 auto; padding:20px 16px 60px;}
+  section{margin-top:34px;}
+  .sec-title{
+    display:inline-block; background:var(--yellow); color:var(--ink);
+    font-weight:800; font-size:1.15rem; padding:8px 18px; border-radius:999px;
+    margin-bottom:6px; box-shadow:3px 3px 0 rgba(32,34,75,.15);
+  }
+  .sec-sub{color:#5a5d8a; margin-bottom:16px; font-size:.98rem;}
+  .grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(250px,1fr));}
+
+  .card{
+    background:var(--card); border-radius:var(--radius); padding:20px;
+    box-shadow:0 4px 14px rgba(108,76,241,.12); border-top:6px solid var(--purple);
+  }
+  .card h3{font-size:1.2rem; margin-bottom:4px;}
+  .small{font-size:.88rem; color:#6a6d99;}
+
+  /* Dashboard */
+  #dash-main{
+    display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(240px,1fr));
+  }
+  .xp-big{font-size:2.2rem; font-weight:800; color:var(--purple);}
+  .level-chip{
+    display:inline-block; background:var(--pink); color:#fff; font-weight:700;
+    padding:6px 14px; border-radius:999px; margin-top:6px;
+  }
+  .bar-outer{background:#E7E4FA; border-radius:999px; height:16px; margin-top:10px; overflow:hidden;}
+  .bar-inner{height:100%; background:linear-gradient(90deg,var(--teal),var(--blue)); border-radius:999px; transition:width .5s;}
+  .badges{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;}
+  .badge{
+    background:#FFF4D6; border:2px solid var(--yellow); border-radius:14px;
+    padding:8px 12px; font-weight:700; font-size:.9rem; animation:pop .4s;
+  }
+  .badge.locked{background:#eee; border-color:#ccc; color:#999;}
+  @keyframes pop{0%{transform:scale(.5); opacity:0;}100%{transform:scale(1); opacity:1;}}
+
+  /* Teacher board */
+  .status-select{
+    margin-top:10px; font-size:1rem; padding:8px 10px; border-radius:10px;
+    border:2px solid var(--purple); font-weight:600; color:var(--ink); width:100%;
+  }
+  .status-pill{
+    display:inline-block; padding:5px 14px; border-radius:999px; font-weight:700; font-size:.9rem;
+    margin-top:8px;
+  }
+  .st-OnTrack{background:#DDF9F4; color:#0B8577;}
+  .st-NeedsHelp{background:#FDE7EF; color:#C4336E;}
+  .st-Ahead{background:#FFF1C9; color:#9A7400;}
+  .st-JustStarted{background:#E5EEFF; color:#1E5FC2;}
+
+  /* Tracker */
+  .filters{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .filter-btn{
+    border:2px solid var(--purple); background:#fff; color:var(--purple);
+    font-weight:700; font-size:.95rem; padding:8px 16px; border-radius:999px; cursor:pointer;
+  }
+  .filter-btn.active{background:var(--purple); color:#fff;}
+  .topic-card{border-top-color:var(--teal); position:relative;}
+  .topic-card.project{border-top-color:var(--pink);}
+  .done-check{
+    margin-top:12px; display:flex; align-items:center; gap:10px; font-weight:700; cursor:pointer;
+    user-select:none;
+  }
+  .done-check input{width:22px; height:22px; accent-color:var(--done); cursor:pointer;}
+  .done-tag{color:var(--done); font-weight:800;}
+  footer{text-align:center; color:#8a8db5; font-size:.85rem; padding:20px;}
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:12px 22px; border-radius:999px;
+    font-weight:700; opacity:0; pointer-events:none; transition:opacity .3s;
+    max-width:90vw; text-align:center;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎓 Student Coding &amp; AI Progress Portal</h1>
+  <p>Learn coding &amp; AI, earn XP and badges — a friendly tracker for Malaysian classrooms</p>
+</header>
+
+<div class="wrap">
+
+  <!-- SECTION 1: STUDENT DASHBOARD -->
+  <section id="dashboard">
+    <span class="sec-title">1 · Student Dashboard</span>
+    <p class="sec-sub">Pick a student below to see their XP, level, badges and progress.</p>
+    <div class="filters" id="student-switch"></div>
+    <div id="dash-main">
+      <div class="card" id="dash-profile">
+        <h3 id="dash-name">—</h3>
+        <p class="small" id="dash-school">—</p>
+        <p class="xp-big"><span id="dash-xp">0</span> XP</p>
+        <span class="level-chip" id="dash-level">Level 1</span>
+        <div class="bar-outer"><div class="bar-inner" id="dash-bar" style="width:0%"></div></div>
+        <p class="small" id="dash-next" style="margin-top:8px;"></p>
+      </div>
+      <div class="card" id="dash-badges-card">
+        <h3>🏅 Badges</h3>
+        <p class="small">Earn badges by finishing topics and projects.</p>
+        <div class="badges" id="dash-badges"></div>
+      </div>
+      <div class="card">
+        <h3>📊 Current Progress</h3>
+        <p class="small" id="dash-done-count">—</p>
+        <div class="bar-outer" style="margin-top:14px;"><div class="bar-inner" id="dash-topic-bar" style="width:0%; background:linear-gradient(90deg,var(--pink),var(--yellow));"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: TEACHER PROGRESS BOARD -->
+  <section id="teachers">
+    <span class="sec-title">2 · Teacher Progress Board</span>
+    <p class="sec-sub">Teachers: change a student's status and the card updates instantly.</p>
+    <div class="grid" id="teacher-grid"></div>
+  </section>
+
+  <!-- SECTION 3: PROJECTS AND TOPICS TRACKER -->
+  <section id="tracker">
+    <span class="sec-title">3 · Projects &amp; Topics Tracker</span>
+    <p class="sec-sub">Mark learning items as done to earn XP for the selected student above.</p>
+    <div class="filters" id="topic-filter">
+      <button class="filter-btn active" data-f="all">All</button>
+      <button class="filter-btn" data-f="Coding">Coding</button>
+      <button class="filter-btn" data-f="AI">AI</button>
+      <button class="filter-btn" data-f="project">Projects</button>
+      <button class="filter-btn" data-f="todo">Not done yet</button>
+    </div>
+    <div class="grid" id="tracker-grid"></div>
+  </section>
+
+</div>
+
+<footer>Sample data only — everything resets when you refresh. Built for Malaysian classrooms 🇲🇾</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- SAMPLE DATA (Malaysia-specific, made up) ----------
+const students = [
+  { id:"s1", name:"Aisyah Rahman", school:"SMK Taman Melati, Kuala Lumpur", xp:120, status:"On Track" },
+  { id:"s2", name:"Wei Jian Tan",  school:"SMK Convent Taiping, Perak",     xp:200, status:"Ahead" },
+  { id:"s3", name:"Nurul Hidayah", school:"SMK Agama Miri, Sarawak",        xp:60,  status:"Needs Help" },
+];
+
+const items = [
+  { id:"t1", type:"topic",  cat:"Coding", title:"HTML Basics: My First Webpage", xp:20, doneBy:["s1","s2"] },
+  { id:"t2", type:"topic",  cat:"Coding", title:"Python: Loops & Lists",         xp:25, doneBy:["s2"] },
+  { id:"t3", type:"topic",  cat:"AI",     title:"What Is AI? Recognising Patterns", xp:20, doneBy:["s1","s2"] },
+  { id:"t4", type:"topic",  cat:"AI",     title:"Training a Simple Chatbot",     xp:30, doneBy:[] },
+  { id:"t5", type:"topic",  cat:"Coding", title:"CSS Styling: Colourful Cards",  xp:20, doneBy:[] },
+  { id:"p1", type:"project",cat:"project",title:"Project: Kampung Food Guide Website", xp:50, doneBy:[] },
+  { id:"p2", type:"project",cat:"project",title:"Project: AI Batik Pattern Classifier", xp:60, doneBy:["s2"] },
+];
+
+const badges = [
+  { id:"b1", name:"🌟 First Steps",  need:1,  desc:"Finish 1 item" },
+  { id:"b2", name:"💻 Code Rookie",  need:2,  desc:"Finish 2 items" },
+  { id:"b3", name:"🤖 AI Explorer",  need:3,  desc:"Finish 3 items" },
+  { id:"b4", name:"🏆 Project Champ",need:4,  desc:"Finish 4 items" },
+];
+
+let currentStudent = "s1";
+
+// ---------- HELPERS ----------
+const $ = s => document.querySelector(s);
+function doneCount(sid){ return items.filter(i => i.doneBy.includes(sid)).length; }
+function totalXP(sid){
+  return items.filter(i => i.doneBy.includes(sid)).reduce((s,i)=>s+i.xp,0);
+}
+function level(xp){ return Math.floor(xp/100)+1; }
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), 2500);
+}
+
+// ---------- SECTION 1: DASHBOARD ----------
+function renderStudentSwitch(){
+  const box = $("#student-switch"); box.innerHTML = "";
+  students.forEach(st => {
+    const b = document.createElement("button");
+    b.className = "filter-btn" + (st.id===currentStudent ? " active" : "");
+    b.textContent = st.name.split(" ")[0];
+    b.onclick = () => { currentStudent = st.id; renderAll(); };
+    box.appendChild(b);
+  });
+}
+function renderDashboard(){
+  const st = students.find(s=>s.id===currentStudent);
+  const xp = totalXP(st.id), lvl = level(xp);
+  $("#dash-name").textContent = st.name;
+  $("#dash-school").textContent = st.school;
+  $("#dash-xp").textContent = xp;
+  $("#dash-level").textContent = "Level " + lvl;
+  $("#dash-bar").style.width = (xp % 100) + "%";
+  $("#dash-next").textContent = (100 - xp % 100) + " XP to Level " + (lvl+1);
+  const dc = doneCount(st.id);
+  $("#dash-done-count").textContent = dc + " of " + items.length + " topics & projects completed";
+  $("#dash-topic-bar").style.width = Math.round(dc/items.length*100) + "%";
+
+  const bwrap = $("#dash-badges"); bwrap.innerHTML = "";
+  badges.forEach(b => {
+    const el = document.createElement("span");
+    const earned = dc >= b.need;
+    el.className = "badge" + (earned ? "" : " locked");
+    el.textContent = earned ? b.name : "🔒 " + b.name;
+    el.title = b.desc;
+    bwrap.appendChild(el);
+  });
+}
+
+// ---------- SECTION 2: TEACHER BOARD ----------
+function renderTeacherBoard(){
+  const grid = $("#teacher-grid"); grid.innerHTML = "";
+  students.forEach(st => {
+    const xp = totalXP(st.id), dc = doneCount(st.id);
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${st.name}</h3>
+      <p class="small">${st.school}</p>
+      <span class="status-pill st-${st.status.replace(/\s/g,'')}">${st.status}</span>
+      <p style="margin-top:10px;"><strong>${xp} XP</strong> · Level ${level(xp)}</p>
+      <p class="small">${dc}/${items.length} topics & projects done</p>
+      <label class="small" style="display:block;margin-top:6px;">Status:</label>
+      <select class="status-select" data-sid="${st.id}">
+        ${["Just Started","On Track","Needs Help","Ahead"].map(o=>
+          `<option ${o===st.status?"selected":""}>${o}</option>`).join("")}
+      </select>`;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll(".status-select").forEach(sel => {
+    sel.onchange = e => {
+      const st = students.find(s=>s.id===e.target.dataset.sid);
+      st.status = e.target.value;
+      renderTeacherBoard();
+      toast(st.name + " → " + st.status);
+    };
+  });
+}
+
+// ---------- SECTION 3: TRACKER ----------
+let topicFilter = "all";
+function renderTracker(){
+  const grid = $("#tracker-grid"); grid.innerHTML = "";
+  items.filter(i => {
+    if(topicFilter==="all") return true;
+    if(topicFilter==="todo") return !i.doneBy.includes(currentStudent);
+    if(topicFilter==="project") return i.type==="project";
+    return i.cat===topicFilter;
+  }).forEach(i => {
+    const done = i.doneBy.includes(currentStudent);
+    const card = document.createElement("div");
+    card.className = "card topic-card" + (i.type==="project" ? " project" : "");
+    card.innerHTML = `
+      <h3>${i.title}</h3>
+      <p class="small">${i.type==="project" ? "📁 Project" : i.cat + " topic"} · worth ${i.xp} XP</p>
+      ${done ? '<p class="done-tag" style="margin-top:8px;">✔ Completed</p>' : ""}
+      <label class="done-check">
+        <input type="checkbox" data-iid="${i.id}" ${done?"checked":""}>
+        Mark as done
+      </label>`;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll("input[type=checkbox]").forEach(cb => {
+    cb.onchange = e => {
+      const item = items.find(x=>x.id===e.target.dataset.iid);
+      const st = students.find(s=>s.id===currentStudent);
+      if(e.target.checked){
+        item.doneBy.push(st.id);
+        toast("+" + item.xp + " XP for " + st.name.split(" ")[0] + "! 🎉");
+      } else {
+        item.doneBy = item.doneBy.filter(id=>id!==st.id);
+        toast("Unchecked — XP removed.");
+      }
+      renderAll();
+    };
+  });
+}
+$("#topic-filter").querySelectorAll(".filter-btn").forEach(btn => {
+  btn.onclick = () => {
+    topicFilter = btn.dataset.f;
+    $("#topic-filter").querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderTracker();
+  };
+});
+
+// ---------- RENDER ALL ----------
+function renderAll(){
+  renderStudentSwitch();
+  renderDashboard();
+  renderTeacherBoard();
+  renderTracker();
+}
+renderAll();
+</script>
+</body>
+</html>
